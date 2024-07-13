@@ -123,10 +123,14 @@ if __name__ == "__main__":
             FOOTER_FONT_PATH,
             FOOTER_FONT_SIZE,
             WHITE,
-            show=True
         )
-        
         
         img.save(new_file_path)
     
     create_pdf_from_image(new_file_path, pdf_output)
+
+    try:
+        if new_file_path.exists():
+            new_file_path.unlink()
+    except Exception as e:
+        print("Was not possible to delete the file", e)
