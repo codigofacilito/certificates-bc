@@ -3,13 +3,26 @@ from fpdf import FPDF
 
 from pathlib import Path
 from consts import * 
-from tools import wrap_text
 
 current_path = Path.cwd()
 
 pdfs_files_path = current_path / "pdfs"
 fonts_files_path = current_path / "fonts"
 images_files_path = current_path / "images"
+image_tmp_filles = images_files_path / "tmp"
+
+def slugify(text):
+    return text.lower().replace(' ', '_')
+
+
+def create_pdf_from_image(image_path, pdf_path):
+    image = Image.open(image_path)
+    width, height = image.size
+    pdf = FPDF(unit="pt", format=[width, height])
+    pdf.add_page()
+    pdf.image(image_path, 0, 0, width, height)
+    pdf.output(pdf_path)
+
 
 def wrap_text(text, font, max_width):
     lines = []
@@ -24,6 +37,7 @@ def wrap_text(text, font, max_width):
             line = word + ' '
     lines.append(line)
     return lines
+
 
 def add_text_to_image(image, text, coordinates, 
                       font_path, font_size, color, 
@@ -48,6 +62,12 @@ if __name__ == "__main__":
     date = "Aprobado el 19 de Septiembre de 2023."
 
     base_image_path = images_files_path / "background.jpg"
+    
+    slugify_name = slugify(full_name)
+    
+    pdf_output = pdfs_files_path / f"{slugify_name}_certificate.pdf"
+    new_file_path = image_tmp_filles / f"{slugify_name}_certificate.jpg"
+
     with Image.open(base_image_path) as img:
 
         add_text_to_image(
@@ -81,28 +101,32 @@ if __name__ == "__main__":
         add_text_to_image(
             img,
             "Por su participación en un programa de 12 semanas de formación",
-            DETAIL_COORDINATES,
-            DETAIL_FONT_PATH,
-            DETAIL_FONT_SIZE,
+            FOOTER_COORDINATES,
+            FOOTER_FONT_PATH,
+            FOOTER_FONT_SIZE,
             WHITE,
         )
 
         add_text_to_image(
             img,
             "intensiva en el área de rails, con más de 50 horas de clases.",
-            (DETAIL_COORDINATES[0], DETAIL_COORDINATES[1] + 60),
-            DETAIL_FONT_PATH,
-            DETAIL_FONT_SIZE,
+            (FOOTER_COORDINATES[0], FOOTER_COORDINATES[1] + 60),
+            FOOTER_FONT_PATH,
+            FOOTER_FONT_SIZE,
             WHITE,
         )
 
         add_text_to_image(
             img,
             date,
-            (DETAIL_COORDINATES[0], DETAIL_COORDINATES[1] + 180),
-            DETAIL_FONT_PATH,
-            DETAIL_FONT_SIZE,
+            (FOOTER_COORDINATES[0], FOOTER_COORDINATES[1] + 180),
+            FOOTER_FONT_PATH,
+            FOOTER_FONT_SIZE,
             WHITE,
             show=True
         )
         
+        
+        img.save(new_file_path)
+    
+    create_pdf_from_image(new_file_path, pdf_output)
